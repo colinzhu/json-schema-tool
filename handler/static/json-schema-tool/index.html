@@ -1,0 +1,99 @@
+<html lang="html">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=0.5, user-scalable=yes">
+    <title>JSON Schema Tool</title>
+    <!-- https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css -->
+    <link rel="stylesheet" href="lib/pico.min.css">
+    <!-- https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js -->
+    <script defer src="lib/alpinejs.cdn.min.js"></script>
+
+    <script type="module">
+        // https://github.com/nuxodin/jema.js
+        // import the element from module, export to global (window), so that it can be accessed by main.js
+        // https://cdn.jsdelivr.net/gh/nuxodin/jema.js@x.x.x/schema.min.js
+        import {Schema} from './lib/schema.min.js';
+
+        window.Schema = Schema;
+        //console.log("window.Schema", Schema);
+    </script>
+    <style>
+        dialog article {
+            max-width: 1000px;
+        }
+
+        :root {
+            --pico-font-size: 100%;
+        }
+
+        table caption {
+            text-align: left;
+            background-color: darkgrey;
+            padding: 5px;
+        }
+    </style>
+
+</head>
+
+<body>
+<div class="container-fluid" x-data="jsonSchemaTool">
+    <nav>
+        <h3>JSON Schema tool</h3>
+    </nav>
+
+    <form @submit.prevent="parseJsonSchemaStr">
+        <label>Json Schema<textarea x-model="jsonSchemaStr" rows="10" required></textarea></label>
+        <div class="grid">
+            <button>Parse</button>
+            <button class="secondary" @click.prevent="clearJsonSchema">Clear</button>
+            <button @click.prevent="loadExampleSchema" class="outline">Load example schema</button>
+        </div>
+    </form>
+    <details x-show="jsonSubSchemaList['root']" open x-transition.duration.500ms>
+        <summary role="button" class="secondary">JSON schema details</summary>
+        <template x-for="(value, index) in jsonSubSchemaList">
+            <details open>
+                <summary x-text="index + ' - ' + value.description" role="button" class="outline"></summary>
+                <table class="striped">
+                    <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Description</th>
+                        <th>Required</th>
+                        <th>Type / Pattern</th>
+                        <th>Length</th>
+                        <th>Examples</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template x-for="(v,i) in value.properties">
+                        <tr>
+                            <td><span x-text="i"></span></td>
+                            <td><span x-text="v.description"></span></td>
+                            <td><span x-text="value.required && value.required.includes(i) ? 'required' : ''"></span></td>
+                            <td><span x-text="v.type"></span> <span x-text="v.enum ? 'enum:' + v.enum : ''"></span> <span x-text="v.pattern ? 'pattern:' + v.pattern : ''"></span></td>
+                            <td><span x-text="v.minLength ? 'min:' + v.minLength : ''"></span> <span x-text="v.maxLength ? 'max:' + v.maxLength : ''"></span></td>
+                            <td><span x-text="v.examples"></span></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+            </details>
+        </template>
+    </details>
+
+    <form @submit.prevent="validateJson">
+        <label>Json message to be validated against the schema<textarea x-model="jsonMsgStr" rows="10" required></textarea></label>
+        <p x-show="response" x-text="response"></p>
+        <div class="grid">
+            <button type="submit">Validate</button>
+            <button type="reset" class="secondary">Clear</button>
+            <button type="button" @click.prevent="loadExampleJson" class="outline">Load example json</button>
+        </div>
+    </form>
+
+    <script src="main.js"></script>
+
+</div>
+</body>
+</html>
