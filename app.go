@@ -3,33 +3,53 @@ package main
 import (
 	"flag"
 	"fmt"
-	"json-schema-tool/handler"
 	"log"
 	"net"
 	"net/http"
+	"os/exec"
+	"runtime"
+
+	"github.com/colinzhu/json-schema-tool/handler"
 )
 
 func main() {
-
 	startServer()
+}
+
+func openBrowser(url string) {
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "windows":
+		cmd = exec.Command("cmd", "/c", "start", url)
+	case "darwin":
+		cmd = exec.Command("open", url)
+	default: // linux or others
+		cmd = exec.Command("xdg-open", url)
+	}
+	_ = cmd.Start()
 }
 
 func startServer() {
 	http.Handle("/json-schema-tool/", handler.NewEmbedStaticFileServer())
 
 	port := flag.Int("p", 0, "Port number to use, default is 0 for random")
+	host := flag.Bool("h", false, "Host on 0.0.0.0 instead of 127.0.0.1")
 	flag.Parse()
 
-	listener, err := net.Listen("tcp", fmt.Sprint(":", *port))
-	if err != nil {
-		panic(err)
+	var addr string
+	if *host {
+		addr = "0.0.0.0"
+	} else {
+		addr = "127.0.0.1"
 	}
 
-	actPort := listener.Addr().(*net.TCPAddr).Port
-	log.Printf("Server started at %d", actPort)
-
-	err = http.Serve(listener, nil)
+	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", addr, *port))
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
+	addr = listener.Addr().String()
+
+	log.Printf("Starting server at http://%s/json-schema-tool/\n", addr)
+	openBrowser(fmt.Sprintf("http://%s/json-schema-tool/", addr))
+	log.Fatal(http.Serve(listener, nil))
 }
