@@ -4,7 +4,7 @@ A web-based tool for working with JSON Schema. This application provides a user 
 - parse JSON schema as tables for human to read
 - validate JSON string against a json schema
 
-![image](https://github.com/colinzhu/resources/blob/master/junit-web-launcher/screenshot-1.png?raw=true)
+![image](https://github.com/colinzhu/resources/blob/master/json-schema-tool/screenshot-1.png?raw=true)
 
 ## Usage
 
